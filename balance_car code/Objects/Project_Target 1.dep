@@ -909,7 +909,7 @@ I (.\Library\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\misc.h)(0x4D783BB4)
 I (.\System\Delay.h)(0x6130920E)
 F (.\Hardware\Key.h)(0x671CA9DE)()
-F (.\Hardware\MPU6050.c)(0x6AC120DA)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\mpu6050.o --omf_browse .\objects\mpu6050.crf --depend .\objects\mpu6050.d)
+F (.\Hardware\MPU6050.c)(0x6AC120D9)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\mpu6050.o --omf_browse .\objects\mpu6050.crf --depend .\objects\mpu6050.d)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (H:\Keil 5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -940,8 +940,8 @@ I (.\Library\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\misc.h)(0x4D783BB4)
 I (.\System\Delay.h)(0x6130920E)
 I (Hardware\MyI2C.h)(0x63984C46)
-I (Hardware\MPU6050.h)(0x6AC120DA)
-F (.\Hardware\MPU6050.h)(0x6AC120DA)()
+I (Hardware\MPU6050.h)(0x6AC120D9)
+F (.\Hardware\MPU6050.h)(0x6AC120D9)()
 F (.\Hardware\MPU6050_Reg.h)(0x6398543A)()
 F (.\Hardware\MyI2C.c)(0x6981ED34)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\myi2c.o --omf_browse .\objects\myi2c.crf --depend .\objects\myi2c.d)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
@@ -1005,7 +1005,7 @@ I (.\Library\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\misc.h)(0x4D783BB4)
 I (Hardware\PWM.h)(0x68F22D08)
 F (.\Hardware\Motor.h)(0x68F22E50)()
-F (.\Hardware\PWM.c)(0x6ACA3BF8)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\pwm.o --omf_browse .\objects\pwm.crf --depend .\objects\pwm.d)
+F (.\Hardware\PWM.c)(0x6ACA3BF7)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\pwm.o --omf_browse .\objects\pwm.crf --depend .\objects\pwm.d)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (H:\Keil 5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -1129,7 +1129,7 @@ I (.\Library\misc.h)(0x4D783BB4)
 I (H:\Keil 5\ARM\ARMCC\include\stdio.h)(0x588B8344)
 I (H:\Keil 5\ARM\ARMCC\include\stdarg.h)(0x588B8344)
 F (.\Hardware\BlueSerial.h)(0x68F2368C)()
-F (.\User\main.c)(0x6AD7612E)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\User\main.c)(0x6AD8BADB)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\Library -I .\User -I .\System -I .\Hardware --no-multibyte-chars-I.\RTE\_Target_1-I"H:\Keil 5\Keil\STM32F1xx_DFP\2.2.0\Device\Include"-I"H:\Keil 5\ARM\CMSIS\Include"-D__UVISION_VERSION="524" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (H:\Keil 5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -1164,7 +1164,7 @@ I (.\Hardware\OLED_Data.h)(0x6714E988)
 I (.\Hardware\LED.h)(0x68DFB268)
 I (.\System\Timer.h)(0x61F11D96)
 I (.\Hardware\Key.h)(0x671CA9DE)
-I (.\Hardware\MPU6050.h)(0x6AC120DA)
+I (.\Hardware\MPU6050.h)(0x6AC120D9)
 I (.\Hardware\Motor.h)(0x68F22E50)
 I (.\Hardware\Encoder.h)(0x68F2316A)
 I (.\Hardware\Serial.h)(0x62D3EBEE)

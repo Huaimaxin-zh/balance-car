@@ -11,7 +11,6 @@
 #include "BlueSerial.h"
 #include <math.h>
 #include "PID.h"
-#define BALANCE_ANGLE (-6.0f) // 需重新实测车身直立值
 
 /*定义全局变量*/
 int16_t AX, AY, AZ, GX, GY, GZ;		//读取MPU6050的原始数据
@@ -21,10 +20,6 @@ uint16_t TimerCount;	//定时器计数值，此值可用于计算定时中断函
 float AngleAcc;			//由加速度计得到的角度值
 float AngleGyro;		//由陀螺仪得到的角度值，执行互补滤波后，此值基本与Angle相等
 float Angle;			//互补滤波后的角度值，准确且无漂移
-int16_t GyroRaw;
-float GyroReal;
-float GyroFiltered = 0.0f;
-float FilterAlpha = 0.3f; // 低通滤波系数：值越小滤波越平滑，但响应会变慢
 
 uint8_t KeyNum,RunFlag;
 
@@ -35,33 +30,13 @@ float LeftSpeed,RightSpeed;
 float AveSpeed,DifSpeed;
 
 PID_t AnglePID={
-    .Kp=2.5,
+    .Kp=4.42,
 	  .Ki=0.0,
-	  .Kd=1.0,
+	  .Kd=1.25,
 	
 	  .OutMax=100,
 	  .OutMin=-100,
 };
-
-
-PID_t GroyPID={
-    .Kp=0.5,
-	  .Ki=0.0001,
-	  .Kd=0.0,
-	
-	  .OutMax=100,
-	  .OutMin=-100,
-};
-
-PID_t SpeedPID={
-    .Kp=0.0,
-	  .Ki=0.0,
-	  .Kd=0.0,
-	
-	  .OutMax=20,
-	  .OutMin=-20,
-};
-
 
 
 int main(void)
@@ -91,10 +66,8 @@ int main(void)
 			if (RunFlag == 0)		//如果RunFlag为0
 			{
 				PID_Init(&AnglePID);//启动程序时给PID初始化，清除之前可能遗留的参数
-				PID_Init(&GroyPID); 
-				//PID_Init(&SpeedPID);
-				//SpeedPID.Target = 0.0f;       // 期望车速为0
-				AnglePID.Target = BALANCE_ANGLE;  // 实际Angle水平值
+				
+				AnglePID.Target = 5.8f;  // 实际Angle水平值
 				RunFlag = 1;		//则RunFlag置1
 			}
 			else					//否则，RunFlag非0
@@ -111,7 +84,6 @@ int main(void)
 		OLED_Printf(0, 24, OLED_6X8, "D:%05.2f", AnglePID.Kd);		//角度环Kd
 		OLED_Printf(0, 32, OLED_6X8, "T:%+05.1f", AnglePID.Target);	//角度环目标值
 		OLED_Printf(0, 40, OLED_6X8, "A:%+05.1f", Angle);			//角度环实际值
-		OLED_Printf(50,40, OLED_6X8, "AG:%+05.1f",GyroFiltered);			//角度环实际值
 		OLED_Printf(0, 48, OLED_6X8, "O:%+05.0f", AnglePID.Out);	//角度环输出值
 		OLED_Printf(0, 56, OLED_6X8, "GY:%+05d", GY);				//显示GY，便于校准陀螺仪零漂
 		OLED_Update();				//OLED更新
@@ -119,15 +91,13 @@ int main(void)
 		/*蓝牙串口打印波形，需配合蓝牙串口小程序实现波形绘制*/
 		//BlueSerial_Printf("[plot,%f,%f,%f]", AngleAcc, AngleGyro, Angle);	//绘制AngleAcc、AngleGyro和Angle的波形
 		// 原来：BlueSerial_Printf(...);
-    Serial_Printf("%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r\n",
-              AngleAcc, Angle, GyroReal,
-              AnglePID.Out, GroyPID.Out, AnglePID.Target);
+     Serial_Printf("%.3f,%.3f,%.3f,%d,%d,%d\r\n",AngleAcc,AngleGyro,Angle,GX,GY,GZ);
 	}
 }
 
 void TIM1_UP_IRQHandler(void)
 {
-	static uint16_t Count0,Count1;
+	static uint16_t Count0;
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
 	{
 		/*定时中断函数1ms自动执行一次*/
@@ -151,16 +121,9 @@ void TIM1_UP_IRQHandler(void)
 		
 		/*校准陀螺仪X轴零漂*/
 		/*此值需实测确定，不同的设备零漂一般不同*/
-		/*实测方法是，在完全静止时，观察OLED显示的GY值，即为零漂值*/
-		/*然后在此处将零漂值减去，使得完全静止时，GY值0*/
-		GyroRaw = GY;
-    GyroReal = -((float)GyroRaw - 3.0f)* (2000.0f / 32768.0f);
-
-			
-			/* 2. 对实际单位的角速度进行简单的低通滤波 */
-
-		GyroFiltered = FilterAlpha * GyroReal + (1.0f - FilterAlpha) * GyroFiltered;
-			
+		/*实测方法是，在完全静止时，观察OLED显示的GX值，即为零漂值*/
+		/*然后在此处将零漂值减去，使得完全静止时，GX值为0*/
+		GY -=4;		
 		/*由加速度计计算得到角度值*/
 		/*atan2计算反正切，得到角度（弧度制）， / 3.14159 * 180可将弧度制转为角度值*/
 		AngleAcc = -atan2(AX, AZ) / 3.14159 * 180;
@@ -168,10 +131,10 @@ void TIM1_UP_IRQHandler(void)
 		/*由陀螺仪积分得到角度值*/
 		/*互补滤波下，角度积分要在上次滤波后的Angle上进行*/
 		/*公式中32768是int16_t变量的最大值，2000是陀螺仪配置的满量程2000度每秒，0.001是定时时间1ms*/
-		AngleGyro = Angle + GyroReal * 0.01f;
+		AngleGyro = Angle + GY / 32768.0 * 2000 * 0.01;
 		
 		/*执行互补滤波*/
-		float Alpha = 0.05;		//互补滤波系数，值越大，越偏向于加速度计，值越小，越偏向于陀螺仪
+		float Alpha = 0.01;		//互补滤波系数，值越大，越偏向于加速度计，值越小，越偏向于陀螺仪
 		Angle = Alpha * AngleAcc + (1 - Alpha) * AngleGyro;		//互补滤波计算，得到稳定的角度值
 		
 		if(Angle>50||Angle <-50)
@@ -182,12 +145,7 @@ void TIM1_UP_IRQHandler(void)
 		{
 			AnglePID.Actual=Angle;
 			PID_Update(&AnglePID);
-			
-			GroyPID.Target=AnglePID.Out;
-			GroyPID.Actual=GyroFiltered;
-			PID_Update(&GroyPID);
-			
-			AvePWM=GroyPID.Out;
+			AvePWM=-AnglePID.Out;
 			
 			LeftPWM=AvePWM+DifPWM/2;
 			RightPWM=AvePWM-DifPWM/2;
@@ -205,24 +163,8 @@ void TIM1_UP_IRQHandler(void)
 		}
 	  }
 		
-		Count1 ++;
-		if (Count1>=50)
-		{
-		   Count1 = 0;
-			
-			LeftSpeed = Encoder_Get(1)/44.0/0.05/9.27666;
-			RightSpeed = Encoder_Get(2)/44.0/0.05/9.27666;
-			
-			AveSpeed=(LeftSpeed+RightSpeed)/2.0;
-			DifSpeed=LeftSpeed-RightSpeed;
-			
-			/*if(RunFlag)
-			{
-				SpeedPID.Actual=AveSpeed;
-				PID_Update(&SpeedPID);
-				AnglePID.Target = -7.63f + SpeedPID.Out;;
-			}*/
-		}
+		
+		
 		/*中断函数退出前，再次检查标志位*/
 		if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
 		{
