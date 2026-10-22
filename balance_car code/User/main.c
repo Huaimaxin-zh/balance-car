@@ -31,7 +31,7 @@ float LeftSpeed,RightSpeed;
 float AveSpeed,DifSpeed;
 
 PID_t AnglePID={
-    .Kp=4.42,
+    .Kp=4.42,   //4.42  0.08 3.25
 	  .Ki=0.08,
 	  .Kd=3.25,
 	
@@ -42,10 +42,18 @@ PID_t AnglePID={
 	.ErrorIntMax=600,.ErrorIntMin=-600,//积分限幅
 };
 
+/*速度环变量*/
+PID_t SpeedPID=
+{
+	.Kp=2.8,.Ki=0.1,.Kd=0.0,//PID值
+	.OutMax=20,.OutMin=-20,//输出限幅
+	.ErrorIntMax=150,.ErrorIntMin=-150,//积分限幅
+};
+
 /*角速度环变量*/
 PID_t GyroPID=
 {
-	.Kp=0.1,.Ki=0.0,.Kd=0.1,//PID值
+	.Kp=0.1,.Ki=0.0,.Kd=0.1,//PID值  0.1 0 0.1
 	.OutMax=5,.OutMin=-5,//输出限幅
 };
 
@@ -76,6 +84,7 @@ int main(void)
 			if (RunFlag == 0)		//如果RunFlag为0
 			{
 				PID_Init(&AnglePID);//启动程序时给PID初始化，清除之前可能遗留的参数
+				PID_Init(&SpeedPID);
 			  PID_Init(&GyroPID);//角速度环PID初始化
 				
 				RunFlag = 1;		//则RunFlag置1
@@ -101,13 +110,13 @@ int main(void)
 		/*蓝牙串口打印波形，需配合蓝牙串口小程序实现波形绘制*/
 		//BlueSerial_Printf("[plot,%f,%f,%f]", AngleAcc, AngleGyro, Angle);	//绘制AngleAcc、AngleGyro和Angle的波形
 		// 原来：BlueSerial_Printf(...);
-     Serial_Printf("%.3f,%.3f,%.3f,%d,%d,%d\r\n",AngleAcc,AngleGyro,Angle,GX,GY,GZ);
+     Serial_Printf("%.3f,%.3f,%.3f,%d,%d,%d\r\n",SpeedPID.Target,AveSpeed,Angle,GX,GY,GZ);
 	}
 }
 
 void TIM1_UP_IRQHandler(void)
 {
-	static uint16_t Count0;
+	static uint16_t Count0,Count1;
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
 	{
 		/*定时中断函数1ms自动执行一次*/
@@ -184,7 +193,25 @@ void TIM1_UP_IRQHandler(void)
 			Motor_SetPWM(2,0);
 		}
 	  }
-		
+		Count1++;
+		if(Count1>=50)
+		{
+			Count1 = 0;
+			
+			LeftSpeed=Encoder_Get(1)/44.0/0.05/9.27666;
+			RightSpeed=Encoder_Get(2)/44.0/0.05/9.27666;
+			
+			AveSpeed=(LeftSpeed+RightSpeed)/2.0;
+			DifSpeed=LeftSpeed-RightSpeed;
+			
+			if (RunFlag)
+			{
+				SpeedPID.Actual=AveSpeed;
+				PID_Update(&SpeedPID);
+				AnglePID.Target=SpeedPID.Out;
+				
+			}
+		}
 		
 		
 		/*中断函数退出前，再次检查标志位*/
