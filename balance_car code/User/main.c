@@ -19,6 +19,7 @@ uint16_t TimerCount;	//定时器计数值，此值可用于计算定时中断函
 
 float AngleAcc;			//由加速度计得到的角度值
 float AngleGyro;		//由陀螺仪得到的角度值，执行互补滤波后，此值基本与Angle相等
+float GyroY_Actual; //陀螺仪Y轴角速度
 float Angle;			//互补滤波后的角度值，准确且无漂移
 
 uint8_t KeyNum,RunFlag;
@@ -37,10 +38,16 @@ PID_t AnglePID={
 	  .OutMax=100,
 	  .OutMin=-100,
 	
-	.OutOffset=0.0,//输出偏移
+	.OutOffset=-6.0,//输出偏移
 	.ErrorIntMax=600,.ErrorIntMin=-600,//积分限幅
 };
 
+/*角速度环变量*/
+PID_t GyroPID=
+{
+	.Kp=0.1,.Ki=0.0,.Kd=0.1,//PID值
+	.OutMax=5,.OutMin=-5,//输出限幅
+};
 
 int main(void)
 {
@@ -69,7 +76,8 @@ int main(void)
 			if (RunFlag == 0)		//如果RunFlag为0
 			{
 				PID_Init(&AnglePID);//启动程序时给PID初始化，清除之前可能遗留的参数
-			
+			  PID_Init(&GyroPID);//角速度环PID初始化
+				
 				RunFlag = 1;		//则RunFlag置1
 			}
 			else					//否则，RunFlag非0
@@ -130,12 +138,15 @@ void TIM1_UP_IRQHandler(void)
 		/*atan2计算反正切，得到角度（弧度制）， / 3.14159 * 180可将弧度制转为角度值*/
 		AngleAcc = -atan2(AX, AZ) / 3.14159 * 180;
 			
-		AngleAcc-=6.5; /*减去零漂值*/
+		AngleAcc-=5.0; /*减去零漂值*/
 		
 		/*由陀螺仪积分得到角度值*/
 		/*互补滤波下，角度积分要在上次滤波后的Angle上进行*/
 		/*公式中32768是int16_t变量的最大值，2000是陀螺仪配置的满量程2000度每秒，0.001是定时时间1ms*/
 		AngleGyro = Angle + GY / 32768.0 * 2000 * 0.01;
+		
+		/*Y轴角速度：角速度计*/
+			GyroY_Actual=GY/32768.0*2000;
 		
 		/*执行互补滤波*/
 		float Alpha = 0.01;		//互补滤波系数，值越大，越偏向于加速度计，值越小，越偏向于陀螺仪
@@ -147,9 +158,16 @@ void TIM1_UP_IRQHandler(void)
 		}
 		if(RunFlag)
 		{
+			/*角度环调控*/
 			AnglePID.Actual=Angle;
 			PID_Update(&AnglePID);
-			AvePWM=-AnglePID.Out;
+			
+			/*角速度环调控*/
+			GyroPID.Target=AnglePID.Out;
+			GyroPID.Actual=GyroY_Actual;
+			PID_Update(&GyroPID);
+			
+			AvePWM=-(AnglePID.Out+GyroPID.Out);
 			
 			LeftPWM=AvePWM+DifPWM/2;
 			RightPWM=AvePWM-DifPWM/2;
