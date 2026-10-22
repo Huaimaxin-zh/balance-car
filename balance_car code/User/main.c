@@ -38,7 +38,7 @@ PID_t AnglePID={
 	  .OutMax=100,
 	  .OutMin=-100,
 	
-	.OutOffset=-6.0,//输出偏移
+	.OutOffset=0.0,//输出偏移
 	.ErrorIntMax=600,.ErrorIntMin=-600,//积分限幅
 };
 
