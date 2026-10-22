@@ -14,8 +14,13 @@ typedef struct {		//定义PID结构体变量类型
 	float Error1;		//上次误差
 	float ErrorInt;		//误差积分
 	
+	float ErrorIntMax;//积分最大限幅
+	float ErrorIntMin;//积分最小限幅
+	
 	float OutMax;		//输出限幅的最大值
 	float OutMin;		//输出限幅的最小值
+	
+	float OutOffset;  //输出偏移值
 } PID_t;
 
 void PID_Init(PID_t *p);

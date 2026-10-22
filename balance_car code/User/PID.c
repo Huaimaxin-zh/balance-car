@@ -35,6 +35,9 @@ void PID_Update(PID_t *p)
 	if (p->Ki != 0)				//如果Ki不为0
 	{
 		p->ErrorInt += p->Error0;	//进行误差积分
+		/*PID优化：积分限幅*/
+		if (p->ErrorInt > p->ErrorIntMax) {p->ErrorInt = p->ErrorIntMax;}
+		if (p->ErrorInt < p->ErrorIntMin) {p->ErrorInt = p->ErrorIntMin;}
 	}
 	else							//否则
 	{
@@ -46,6 +49,10 @@ void PID_Update(PID_t *p)
 	p->Out = p->Kp * p->Error0
 		   + p->Ki * p->ErrorInt
 		   + p->Kd * (p->Error0 - p->Error1);
+	
+	/*PID优化：输出偏移*/
+	if (p->Out > 0 || p->Out < 6) {p->Out += p->OutOffset;}
+	if (p->Out < 0 || p->Out >-6) {p->Out -= p->OutOffset;}
 	
 	/*输出限幅*/
 	if (p->Out > p->OutMax) {p->Out = p->OutMax;}	//限制输出值最大为结构体指定的OutMax

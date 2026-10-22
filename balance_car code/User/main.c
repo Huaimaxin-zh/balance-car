@@ -31,11 +31,14 @@ float AveSpeed,DifSpeed;
 
 PID_t AnglePID={
     .Kp=4.42,
-	  .Ki=0.0,
-	  .Kd=1.25,
+	  .Ki=0.08,
+	  .Kd=3.25,
 	
 	  .OutMax=100,
 	  .OutMin=-100,
+	
+	.OutOffset=0.0,//输出偏移
+	.ErrorIntMax=600,.ErrorIntMin=-600,//积分限幅
 };
 
 
