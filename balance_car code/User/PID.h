@@ -4,6 +4,7 @@
 typedef struct {		//定义PID结构体变量类型
 	float Target;		//目标值，由用户设定
 	float Actual;		//实际值，从传感器读取
+	float Actual1;
 	float Out;			//输出值，作用于执行器
 	
 	float Kp;			//比例项权重

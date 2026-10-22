@@ -50,6 +50,14 @@ PID_t SpeedPID=
 	.ErrorIntMax=150,.ErrorIntMin=-150,//积分限幅
 };
 
+/*转向环变量*/
+PID_t TurnPID=
+{
+	.Kp=0.0,.Ki=2.6,.Kd=0.0,//PID值
+	.OutMax=50,.OutMin=-50,//输出限幅
+	.ErrorIntMax=20,.ErrorIntMin=-20,//积分限幅
+};
+
 /*角速度环变量*/
 PID_t GyroPID=
 {
@@ -85,6 +93,7 @@ int main(void)
 			{
 				PID_Init(&AnglePID);//启动程序时给PID初始化，清除之前可能遗留的参数
 				PID_Init(&SpeedPID);
+				PID_Init(&TurnPID);
 			  PID_Init(&GyroPID);//角速度环PID初始化
 				
 				RunFlag = 1;		//则RunFlag置1
@@ -210,9 +219,12 @@ void TIM1_UP_IRQHandler(void)
 				PID_Update(&SpeedPID);
 				AnglePID.Target=SpeedPID.Out;
 				
-			}
+				
+				TurnPID.Actual=DifSpeed;
+				PID_Update(&TurnPID);
+				TurnPID.Target=TurnPID.Out;
 		}
-		
+	}
 		
 		/*中断函数退出前，再次检查标志位*/
 		if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
