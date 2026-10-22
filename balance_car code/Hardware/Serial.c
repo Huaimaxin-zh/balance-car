@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+char Serial_RxPacket[100];
 uint8_t Serial_RxData;		//定义串口接收的数据变量
 uint8_t Serial_RxFlag;		//定义串口接收的标志位变量
 

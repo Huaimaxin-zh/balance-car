@@ -42,3 +42,5 @@
 .\objects\main.o: .\Hardware\BlueSerial.h
 .\objects\main.o: H:\Keil 5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\main.o: User\PID.h
+.\objects\main.o: H:\Keil 5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\main.o: H:\Keil 5\ARM\ARMCC\Bin\..\include\stdlib.h
