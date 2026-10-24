@@ -123,9 +123,12 @@ int main(void)
 		/*蓝牙串口打印波形，需配合蓝牙串口小程序实现波形绘制*/
 		//BlueSerial_Printf("[plot,%f,%f,%f]", AngleAcc, AngleGyro, Angle);	//绘制AngleAcc、AngleGyro和Angle的波形
 		// 原来：BlueSerial_Printf(...);
+		BT_Parse();
+		
      Serial_Printf("%.3f,%.3f,%.3f,%d,%d,%d\r\n",SpeedPID.Target,AveSpeed,Angle,GX,GY,GZ);
 	}
 }
+
 
 void TIM1_UP_IRQHandler(void)
 {
@@ -249,106 +252,90 @@ void TIM1_UP_IRQHandler(void)
 /*蓝牙串口数据解析函数*/
 void BT_Parse()
 {
-	// 判断串口是否收到一包新数据（接收完成标志置1）
-	if (Serial_RxFlag==1)
-	{
-		/*字符串分割:第一次调用strtok，以逗号作为分隔符拆分接收缓冲区字符串*/
-		char *string1=strtok (Serial_RxPacket,",");
-		
-		/*字符串判断+拆分：按键功能（自定义协议格式）*/
-		if (strcmp (string1,"key")==0) // 判断数据包类型为按键数据包
+	if (BlueSerial_RxFlag == 1)		//如果收到数据包
 		{
-			char *string2=strtok (NULL,","); // 继续取下一段分割字符串
-			char *string3=strtok (NULL,","); // 取下第三段分割字符串
-			if (strcmp (string2,"1")==0) // 判断目标按键是按键1
+			char *Tag = strtok(BlueSerial_RxPacket, ",");	//提取数据1，定义为标签Tag
+			if (strcmp(Tag, "key") == 0)					//Tag为key，收到按键数据包
 			{
-				if (strcmp (string3,"ON/OFF")==0) // 功能：平衡车启停控制
+				char *Name = strtok(NULL, ",");				//提取数据2，定义为按键名称
+				char *Action = strtok(NULL, ",");			//提取数据3，定义为按键动作
+				if (strcmp (Name,"1")==0)//目标按键为按键1
+			{
+				if (strcmp (Action,"ON/OFF")==0)//控制平衡车启停
 				{
-					if (RunFlag==0) // 当前为停止状态，准备启动平衡车
+					if (RunFlag==0)
 					{
-						PID_Init(&AnglePID);  // 初始化角度环PID，清空积分等状态
-						PID_Init(&SpeedPID);  // 初始化速度环PID
-						PID_Init(&TurnPID);   // 初始化转向环PID
-						RunFlag=1;            // 置运行标志，平衡车开始进入控制
+						PID_Init(&AnglePID);
+						PID_Init(&SpeedPID);
+						PID_Init(&TurnPID);
+						RunFlag=1;
 					}
-					else // 当前已经在运行，按下则停止
+					else
 					{
-						RunFlag=0;            // 清除运行标志，平衡车关闭控制
+						RunFlag=0;
 					}
 				}
 			}
-		}
-		
-		/*字符串判断：滑块功能（固定协议格式）*/
-		if (strcmp (string1,"slider")==0) // 判断数据包类型为滑块调参数据包
-		{
-			char *string2=strtok (NULL,","); // 读取参数名称
-			char *string3=strtok (NULL,","); // 读取参数数值字符串
-			if (strcmp (string2,"AngleKp")==0) // 目标滑块：角度环Kp
-			{
-				AnglePID.Kp=atof(string3); // 字符串转浮点数，赋值给角度环Kp
 			}
-			else if (strcmp (string2,"AngleKi")==0) // 目标滑块：角度环Ki
+			else if (strcmp(Tag, "slider") == 0)			//Tag为slider，收到滑杆数据包
 			{
-				AnglePID.Ki=atof(string3);
+				char *Name = strtok(NULL, ",");				//提取数据2，定义为滑杆名称
+				char *Value = strtok(NULL, ",");			//提取数据3，定义为滑杆值
+				
+				/*执行滑杆操作*/
+				if (strcmp(Name, "AngleKp") == 0)			//如果滑杆名称是AngleKp
+				{
+					AnglePID.Kp = atof(Value);				//则把滑杆值赋值给角度环Kp
+				}
+				else if (strcmp(Name, "AngleKi") == 0)		//如果滑杆名称是AngleKi
+				{
+					AnglePID.Ki = atof(Value);				//则把滑杆值赋值给角度环Ki
+				}
+				else if (strcmp(Name, "AngleKd") == 0)		//如果滑杆名称是AngleKd
+				{
+					AnglePID.Kd = atof(Value);				//则把滑杆值赋值给角度环Kd
+				}
+				else if (strcmp(Name, "SpeedKp") == 0)		//如果滑杆名称是SpeedKp
+				{
+					SpeedPID.Kp = atof(Value);				//则把滑杆值赋值给速度环Kp
+				}
+				else if (strcmp(Name, "SpeedKi") == 0)		//如果滑杆名称是SpeedKi
+				{
+					SpeedPID.Ki = atof(Value);				//则把滑杆值赋值给速度环Ki
+				}
+				else if (strcmp(Name, "SpeedKd") == 0)		//如果滑杆名称是SpeedKd
+				{
+					SpeedPID.Kd = atof(Value);				//则把滑杆值赋值给速度环Kd
+				}
+				else if (strcmp(Name, "TurnKp") == 0)		//如果滑杆名称是TurnKp
+				{
+					TurnPID.Kp = atof(Value);				//则把滑杆值赋值给转向环Kp
+				}
+				else if (strcmp(Name, "TurnKi") == 0)		//如果滑杆名称是TurnKi
+				{
+					TurnPID.Ki = atof(Value);				//则把滑杆值赋值给转向环Ki
+				}
+				else if (strcmp(Name, "TurnKd") == 0)		//如果滑杆名称是TurnKd
+				{
+					TurnPID.Kd = atof(Value);				//则把滑杆值赋值给转向环Kd
+				}
+				else if (strcmp(Name, "Offset") == 0)		//如果滑杆名称是Offset
+				{
+					AnglePID.OutOffset = atof(Value);		//则把滑杆值赋值给OutOffset
+				}
 			}
-			else if (strcmp (string2,"AngleKd")==0) // 目标滑块：角度环Kd
+			else if (strcmp(Tag, "joystick") == 0)			//Tag为joystick，收到摇杆数据包
 			{
-				AnglePID.Kd=atof(string3);
+				int8_t LH = atoi(strtok(NULL, ","));		//提取数据2，定义为摇杆值LH
+				int8_t LV = atoi(strtok(NULL, ","));		//提取数据3，定义为摇杆值LV
+				int8_t RH = atoi(strtok(NULL, ","));		//提取数据4，定义为摇杆值RH
+				int8_t RV = atoi(strtok(NULL, ","));		//提取数据5，定义为摇杆值RV
+				
+				/*执行摇杆操作*/
+				SpeedPID.Target = LV / 25.0;	//摇杆值LV缩放后，控制速度环目标值，前后行进控制
+				TurnPID.Target = RH / 25.0;		//摇杆值RH缩放后，控制转向环目标值，左右转弯控制
 			}
-			else if (strcmp (string2,"GyroKp")==0) // 目标滑块：陀螺仪环Kp
-			{
-				GyroPID.Kp=atof(string3);
-			}
-			else if (strcmp (string2,"GyroKi")==0) // 目标滑块：陀螺仪环Ki
-			{
-				GyroPID.Ki=atof(string3);
-			}
-			else if (strcmp (string2,"GyroKd")==0) // 目标滑块：陀螺仪环Kd
-			{
-				GyroPID.Kd=atof(string3);
-			}
-			else if (strcmp (string2,"SpeedKp")==0) // 目标滑块：速度环Kp
-			{
-				SpeedPID.Kp=atof(string3);
-			}
-			else if (strcmp (string2,"SpeedKi")==0) // 目标滑块：速度环Ki
-			{
-				SpeedPID.Ki=atof(string3);
-			}
-			else if (strcmp (string2,"SpeedKd")==0) // 目标滑块：速度环Kd
-			{
-				SpeedPID.Kd=atof(string3);
-			}
-			else if (strcmp (string2,"TurnKp")==0) // 目标滑块：转向环Kp
-			{
-				TurnPID.Kp=atof(string3);
-			}
-			else if (strcmp (string2,"TurnKi")==0) // 目标滑块：转向环Ki
-			{
-				TurnPID.Ki=atof(string3);
-			}
-			else if (strcmp (string2,"TurnKd")==0) // 目标滑块：转向环Kd
-			{
-				TurnPID.Kd=atof(string3);
-			}
-			else if (strcmp (string2,"Offset")==0) // 目标滑块：角度偏移量（直立补偿）
-			{
-				AnglePID.OutOffset=atof(string3);
-			}
-		}
-		
-		/*字符串判断：摇杆功能（固定协议格式）*/
-		if (strcmp (string1,"joystick")==0) // 判断数据包类型为摇杆数据包
-		{
-			int8_t LH=atoi(strtok (NULL,",")); // 左摇杆水平值
-			int8_t LV=atoi(strtok (NULL,",")); // 左摇杆竖直值（用来控制前进后退速度）
-			int8_t RH=atoi(strtok (NULL,",")); // 右摇杆水平值（用来控制转向）
-			int8_t RV=atoi(strtok (NULL,",")); // 右摇杆竖直值，本工程暂时没有使用
 			
-			SpeedPID.Target=LV/50.0; // 左摇杆竖直分量缩放，作为速度环目标速度
-			TurnPID.Target=RH/50.0;	// 右摇杆水平分量缩放，作为转向环目标
+			BlueSerial_RxFlag = 0;				//处理完成后，标志位置0，允许接收下一个数据包
 		}
-		Serial_RxFlag=0; // 清接收标志，表示这一包数据解析完成，等待下一包
-	}
 }
