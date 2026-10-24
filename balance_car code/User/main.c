@@ -229,7 +229,7 @@ void TIM1_UP_IRQHandler(void)
 				
 				TurnPID.Actual=DifSpeed;
 				PID_Update(&TurnPID);
-				TurnPID.Target=TurnPID.Out;
+				DifPWM=TurnPID.Out;
 		}
 	}
 		
